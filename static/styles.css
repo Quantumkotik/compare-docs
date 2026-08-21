@@ -1,0 +1,199 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --border: #2a2e37;
+  --text: #e7e9ee;
+  --muted: #9aa1ac;
+  --accent: #5b8cff;
+  --accent-hover: #4675e6;
+  --danger: #ff6b6b;
+  --add-bg: #10361f;
+  --sub-bg: #3a1414;
+  --chg-bg: #3a2f10;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dropzone-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 16px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dropzone:hover {
+  border-color: var(--accent);
+}
+
+.dropzone-title {
+  font-weight: 600;
+}
+
+.dropzone-filename {
+  color: var(--muted);
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.dropzone input[type="file"] {
+  display: none;
+}
+
+button#submit-btn {
+  align-self: center;
+  padding: 12px 32px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+button#submit-btn:hover {
+  background: var(--accent-hover);
+}
+
+button#submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  margin-top: 20px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.status.error {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.result {
+  margin-top: 32px;
+}
+
+.result-summary {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  text-align: center;
+}
+
+.diff-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* difflib.HtmlDiff output styling */
+.diff-container table.diff {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 13px;
+  background: var(--panel);
+}
+
+.diff-container table.diff td,
+.diff-container table.diff th {
+  padding: 2px 8px;
+  vertical-align: top;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.diff-container table.diff th {
+  background: #1e2229;
+  color: var(--muted);
+  position: sticky;
+  top: 0;
+}
+
+.diff-container .diff_header {
+  color: var(--muted);
+  background: #1e2229;
+  text-align: right;
+  user-select: none;
+}
+
+.diff-container .diff_next {
+  background: #1e2229;
+}
+
+.diff-container .diff_add {
+  background: var(--add-bg);
+}
+
+.diff-container .diff_sub {
+  background: var(--sub-bg);
+}
+
+.diff-container .diff_chg {
+  background: var(--chg-bg);
+}
+
+@media (max-width: 640px) {
+  .dropzone-grid {
+    grid-template-columns: 1fr;
+  }
+}

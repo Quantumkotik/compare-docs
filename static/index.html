@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сравнение документов</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Сравнение документов</h1>
+      <p class="subtitle">Загрузите два .docx файла, чтобы увидеть различия</p>
+    </header>
+
+    <form id="compare-form" class="upload-form">
+      <div class="dropzone-grid">
+        <label class="dropzone" for="file1">
+          <span class="dropzone-title">Документ 1</span>
+          <span class="dropzone-filename" id="file1-name">Файл не выбран</span>
+          <input type="file" id="file1" name="file1" accept=".docx" required>
+        </label>
+
+        <label class="dropzone" for="file2">
+          <span class="dropzone-title">Документ 2</span>
+          <span class="dropzone-filename" id="file2-name">Файл не выбран</span>
+          <input type="file" id="file2" name="file2" accept=".docx" required>
+        </label>
+      </div>
+
+      <button type="submit" id="submit-btn">Сравнить</button>
+    </form>
+
+    <div id="status" class="status" hidden></div>
+
+    <div id="result" class="result" hidden>
+      <div id="result-summary" class="result-summary"></div>
+      <div id="diff-container" class="diff-container"></div>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
