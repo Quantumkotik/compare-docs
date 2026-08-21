@@ -1,16 +1,41 @@
-# This is a sample Python script.
+"""Точка входа: поднимает веб-сервер и открывает интерфейс в браузере."""
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from __future__ import annotations
+
+import os
+import socket
+import threading
+import webbrowser
+
+import uvicorn
+
+HOST = os.getenv("HOST", "127.0.0.1")
+DEFAULT_PORT = int(os.getenv("PORT", "8080"))
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def pick_port(host: str, preferred: int) -> int:
+    """Возвращает свободный порт: сначала пробует preferred, иначе просит порт у ОС."""
+    for candidate in (preferred, 0):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            try:
+                sock.bind((host, candidate))
+            except OSError:
+                continue
+            return sock.getsockname()[1]
+    raise RuntimeError("Не удалось найти свободный порт")
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm!!!!!')
+def main() -> None:
+    port = pick_port(HOST, DEFAULT_PORT)
+    url = f"http://{HOST}:{port}"
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    if port != DEFAULT_PORT:
+        print(f"Порт {DEFAULT_PORT} занят, используется {port}")
+
+    print(f"Веб-интерфейс: {url}  (Ctrl+C — остановить)")
+    threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+    uvicorn.run("app.server:app", host=HOST, port=port, log_level="info")
+
+
+if __name__ == "__main__":
+    main()

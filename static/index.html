@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Загрузка двух документов .docx</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="header">
+    <h1>Загрузка документов</h1>
+    <p class="subtitle">Выберите или перетащите два файла <code>.docx</code></p>
+  </header>
+
+  <main class="container">
+    <form id="upload-form" class="drops">
+      <label class="drop" data-slot="first">
+        <input type="file" accept=".docx" hidden>
+        <span class="drop__badge">Документ 1</span>
+        <span class="drop__hint">Перетащите файл сюда или нажмите, чтобы выбрать</span>
+        <span class="drop__file"></span>
+        <button type="button" class="drop__clear" title="Убрать файл" hidden>×</button>
+      </label>
+
+      <label class="drop" data-slot="second">
+        <input type="file" accept=".docx" hidden>
+        <span class="drop__badge">Документ 2</span>
+        <span class="drop__hint">Перетащите файл сюда или нажмите, чтобы выбрать</span>
+        <span class="drop__file"></span>
+        <button type="button" class="drop__clear" title="Убрать файл" hidden>×</button>
+      </label>
+    </form>
+
+    <div class="actions">
+      <button id="submit" class="btn btn--primary" disabled>Загрузить</button>
+      <button id="reset" class="btn" type="button">Сбросить</button>
+      <span id="status" class="status"></span>
+    </div>
+
+    <p id="error" class="error" hidden></p>
+
+    <section id="results" class="results" hidden></section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
