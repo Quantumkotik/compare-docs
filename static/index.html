@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>compare-docs</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="header">
+    <h1>compare-docs</h1>
+    <p class="subtitle">Загрузите два документа .docx</p>
+  </header>
+
+  <main class="main">
+    <form id="upload-form">
+      <div class="dropzones">
+        <label class="dropzone" data-slot="left">
+          <input type="file" name="left" accept=".docx" hidden>
+          <span class="dropzone__badge">Документ 1</span>
+          <span class="dropzone__icon">＋</span>
+          <span class="dropzone__label">Перетащите файл или нажмите</span>
+          <span class="dropzone__file"></span>
+        </label>
+
+        <label class="dropzone" data-slot="right">
+          <input type="file" name="right" accept=".docx" hidden>
+          <span class="dropzone__badge">Документ 2</span>
+          <span class="dropzone__icon">＋</span>
+          <span class="dropzone__label">Перетащите файл или нажмите</span>
+          <span class="dropzone__file"></span>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="submit" id="submit-btn" disabled>Загрузить</button>
+        <button type="button" id="reset-btn" class="secondary">Сбросить</button>
+      </div>
+    </form>
+
+    <p id="error" class="error" hidden></p>
+
+    <section id="results" class="results" hidden>
+      <div class="result" data-slot="left"></div>
+      <div class="result" data-slot="right"></div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
