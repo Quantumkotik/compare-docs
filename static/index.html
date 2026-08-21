@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сравнение документов</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="header">
+    <h1>Загрузка документов</h1>
+    <p class="subtitle">Выберите два файла в формате .docx</p>
+</header>
+
+<main class="container">
+    <form id="upload-form">
+        <div class="drops">
+            <label class="drop" data-slot="1" for="file1">
+                <input type="file" id="file1" name="file1" accept=".docx" hidden>
+                <span class="drop__index">Документ 1</span>
+                <span class="drop__hint">Перетащите файл сюда или нажмите, чтобы выбрать</span>
+                <span class="drop__file"></span>
+            </label>
+
+            <label class="drop" data-slot="2" for="file2">
+                <input type="file" id="file2" name="file2" accept=".docx" hidden>
+                <span class="drop__index">Документ 2</span>
+                <span class="drop__hint">Перетащите файл сюда или нажмите, чтобы выбрать</span>
+                <span class="drop__file"></span>
+            </label>
+        </div>
+
+        <button type="submit" id="submit" class="button" disabled>Загрузить</button>
+    </form>
+
+    <p id="error" class="error" hidden></p>
+
+    <section id="results" class="results" hidden></section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
