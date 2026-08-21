@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Сравнение документов</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Сравнение docx-документов</h1>
+
+    <form id="compare-form">
+      <div class="upload-row">
+        <label class="upload-box">
+          <span>Документ 1</span>
+          <input type="file" id="file1" name="file1" accept=".docx" required>
+          <span class="filename" id="filename1">Файл не выбран</span>
+        </label>
+
+        <label class="upload-box">
+          <span>Документ 2</span>
+          <input type="file" id="file2" name="file2" accept=".docx" required>
+          <span class="filename" id="filename2">Файл не выбран</span>
+        </label>
+      </div>
+
+      <button type="submit" id="submit-btn">Сравнить</button>
+    </form>
+
+    <p id="error" class="error hidden"></p>
+    <p id="loading" class="loading hidden">Сравниваем документы…</p>
+
+    <div id="result" class="result hidden">
+      <div class="legend">
+        <span class="legend-item"><span class="swatch equal"></span>Без изменений</span>
+        <span class="legend-item"><span class="swatch delete"></span>Только в документе 1</span>
+        <span class="legend-item"><span class="swatch insert"></span>Только в документе 2</span>
+      </div>
+      <div id="diff-output"></div>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
