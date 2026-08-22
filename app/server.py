@@ -8,6 +8,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.diff import сравнить
 from app.docx_reader import DocxError, parse_docx
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,12 +46,16 @@ async def _read_docx(upload: UploadFile) -> dict:
 
 @app.post("/api/upload")
 async def upload(
-    first: UploadFile = File(..., description="Первый документ .docx"),
-    second: UploadFile = File(..., description="Второй документ .docx"),
+    first: UploadFile = File(..., description="Старая версия документа .docx"),
+    second: UploadFile = File(..., description="Новая версия документа .docx"),
 ) -> dict:
-    """Принимает два документа, возвращает их содержимое и статистику."""
+    """Принимает две версии документа и возвращает их содержимое и различия."""
+    старый = await _read_docx(first)
+    новый = await _read_docx(second)
+
     return {
-        "documents": [await _read_docx(first), await _read_docx(second)],
+        "documents": [старый, новый],
+        "diff": сравнить(старый["lines"], новый["lines"]),
     }
 
 
