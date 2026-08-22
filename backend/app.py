@@ -37,5 +37,5 @@ async def compare(file1: UploadFile = File(...), file2: UploadFile = File(...)):
     return {
         "file1": file1.filename,
         "file2": file2.filename,
-        "diff": diff_paragraphs(paragraphs1, paragraphs2),
+        "rows": diff_paragraphs(paragraphs1, paragraphs2),
     }

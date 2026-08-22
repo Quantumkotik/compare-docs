@@ -32,11 +32,14 @@
 
     <div id="result" class="result hidden">
       <div class="legend">
-        <span class="legend-item"><span class="swatch equal"></span>Без изменений</span>
-        <span class="legend-item"><span class="swatch delete"></span>Только в документе 1</span>
-        <span class="legend-item"><span class="swatch insert"></span>Только в документе 2</span>
+        <span class="legend-item"><span class="swatch delete"></span>Удалено в новой версии</span>
+        <span class="legend-item"><span class="swatch insert"></span>Добавлено в новой версии</span>
       </div>
-      <div id="diff-output"></div>
+      <div class="diff-headers">
+        <div class="diff-header" id="header-left">Старая версия</div>
+        <div class="diff-header" id="header-right">Новая версия</div>
+      </div>
+      <div id="diff-output" class="diff-table"></div>
     </div>
   </div>
 
