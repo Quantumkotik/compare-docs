@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -19,7 +19,22 @@ DOCX_CONTENT_TYPE = (
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 )
 
-app = FastAPI(title="Docx Uploader", docs_url="/api/docs", redoc_url=None)
+app = FastAPI(title="Docx Compare", docs_url="/api/docs", redoc_url=None)
+
+
+@app.middleware("http")
+async def запретить_кеш(request: Request, call_next):
+    """Браузер должен каждый раз проверять страницу и скрипты.
+
+    Иначе после обновления кода в открытой вкладке остаётся старый app.js,
+    который не понимает новый ответ сервера.
+    """
+    ответ = await call_next(request)
+
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        ответ.headers["Cache-Control"] = "no-cache, must-revalidate"
+
+    return ответ
 
 
 async def _read_docx(upload: UploadFile) -> dict:

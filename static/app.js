@@ -104,6 +104,10 @@ submitBtn.addEventListener('click', async (e) => {
       throw new Error(payload.detail || 'Не удалось обработать документы');
     }
 
+    if (!payload.documents || !payload.diff) {
+      throw new Error('Ответ сервера не распознан — обновите страницу (Ctrl+F5)');
+    }
+
     render(payload.documents, payload.diff);
     statusEl.textContent = 'Готово';
   } catch (err) {
