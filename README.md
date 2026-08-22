@@ -32,6 +32,47 @@ python -m venv .venv
 
 Сравнивается весь текст в порядке документа — абзацы и строки таблиц.
 
+## Запуск в Docker (Ubuntu-сервер)
+
+Нужны `docker` и плагин `docker compose` (Ubuntu 22.04/24.04):
+
+```bash
+sudo apt update && sudo apt install -y docker.io docker-compose-v2
+sudo systemctl enable --now docker
+```
+
+Сборка и запуск:
+
+```bash
+docker compose up -d --build
+```
+
+Приложение поднимется на порту 8080: `http://<адрес-сервера>:8080`.
+Другой внешний порт задаётся переменной `PORT`:
+
+```bash
+PORT=9000 docker compose up -d --build
+```
+
+Полезное:
+
+```bash
+docker compose logs -f
+docker compose ps
+docker compose down
+```
+
+Контейнер перезапускается сам (`restart: unless-stopped`) и имеет healthcheck
+по `/api/health` — состояние видно в `docker compose ps`.
+
+Внутри образа сервер запускается напрямую через `uvicorn` на `0.0.0.0:8080`;
+`main.py` не используется, потому что он открывает браузер и сам выбирает порт.
+Калькулятор в образ не входит — это оконная программа, серверу она не нужна.
+
+За `nginx` с TLS добавьте в `Dockerfile` к команде запуска
+`--proxy-headers --forwarded-allow-ips "<ip прокси>"` и не публикуйте порт
+контейнера наружу.
+
 ## Структура
 
 - `main.py` — точка входа: запуск сервера и открытие браузера
@@ -39,6 +80,7 @@ python -m venv .venv
 - `app/docx_reader.py` — разбор `.docx` (текст, заголовки, таблицы, статистика)
 - `app/diff.py` — выравнивание абзацев и различия по словам (`difflib`)
 - `static/` — интерфейс: `index.html`, `styles.css`, `app.js`
+- `Dockerfile`, `docker-compose.yml` — запуск на сервере
 
 ## API
 

@@ -1,0 +1,14 @@
+.git
+.gitignore
+.github
+.idea
+.claude
+.venv
+__pycache__/
+*.pyc
+Dockerfile
+.dockerignore
+docker-compose.yml
+README.md
+main.py
+калькулятор/

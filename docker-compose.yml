@@ -1,0 +1,20 @@
+services:
+  docx-compare:
+    build: .
+    image: docx-compare:latest
+    container_name: docx-compare
+    restart: unless-stopped
+    # наружу — PORT из окружения (по умолчанию 8080), внутри всегда 8080
+    ports:
+      - "${PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
