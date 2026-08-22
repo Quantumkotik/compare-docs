@@ -31,7 +31,10 @@ async def запретить_кеш(request: Request, call_next):
     """
     ответ = await call_next(request)
 
-    if request.url.path == "/" or request.url.path.startswith("/static/"):
+    if request.url.path == "/":
+        # саму страницу не храним вообще: она задаёт версии остальных файлов
+        ответ.headers["Cache-Control"] = "no-store"
+    elif request.url.path.startswith("/static/"):
         ответ.headers["Cache-Control"] = "no-cache, must-revalidate"
 
     return ответ

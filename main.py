@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import socket
 import threading
+import time
 import webbrowser
 
 import uvicorn
@@ -33,7 +34,10 @@ def main() -> None:
         print(f"Порт {DEFAULT_PORT} занят, используется {port}")
 
     print(f"Веб-интерфейс: {url}  (Ctrl+C — остановить)")
-    threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+
+    # уникальный адрес на каждый запуск: браузер не подставит страницу из кеша
+    свежий = f"{url}/?v={int(time.time())}"
+    threading.Timer(1.0, lambda: webbrowser.open(свежий)).start()
     uvicorn.run("app.server:app", host=HOST, port=port, log_level="info")
 
 
