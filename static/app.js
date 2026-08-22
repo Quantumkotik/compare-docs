@@ -1,7 +1,17 @@
+// Версия фронтенда. Видна в консоли браузера — по ней сразу понятно,
+// выполняется свежий файл или старый из кеша.
+const APP_VERSION = 2;
+const API_URL = '/api/compare';
+
+const log = (...args) => console.log(`[compare-docs v${APP_VERSION}]`, ...args);
+
+log('скрипт загружен, эндпоинт:', API_URL);
+
 const form = document.getElementById('upload-form');
 const submit = document.getElementById('submit');
 const errorBox = document.getElementById('error');
 const results = document.getElementById('results');
+const diffBody = document.getElementById('diff-body');
 const drops = Array.from(document.querySelectorAll('.drop'));
 
 function refreshSubmit() {
@@ -9,6 +19,7 @@ function refreshSubmit() {
 }
 
 function showFile(drop, file) {
+    log('выбран файл:', file ? `${file.name} (${file.size} байт)` : 'нет');
     drop.classList.toggle('is-filled', Boolean(file));
     drop.querySelector('.drop__file').textContent = file ? file.name : '';
     refreshSubmit();
@@ -60,40 +71,62 @@ function formatSize(bytes) {
     return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
 }
 
-function renderResults(documents) {
-    results.innerHTML = '';
-    documents.forEach((doc, index) => {
-        const card = document.createElement('article');
-        card.className = 'card';
+/** Строит ячейку одной стороны diff: номер строки и подсвеченный текст. */
+function buildCell(side, column) {
+    const cell = document.createElement('div');
+    cell.className = `cell cell--${column}`;
 
-        const title = document.createElement('h2');
-        title.textContent = `Документ ${index + 1}: ${doc.filename}`;
-        card.append(title);
+    if (!side) {
+        cell.classList.add('cell--empty');
+        return cell;
+    }
 
-        const dl = document.createElement('dl');
-        const rows = [
-            ['Размер', formatSize(doc.size)],
-            ['Абзацев', doc.paragraphs],
-            ['Таблиц', doc.tables],
-            ['Слов', doc.words],
-            ['Символов', doc.characters],
-        ];
-        rows.forEach(([label, value]) => {
-            const dt = document.createElement('dt');
-            dt.textContent = label;
-            const dd = document.createElement('dd');
-            dd.textContent = value;
-            dl.append(dt, dd);
-        });
-        card.append(dl);
+    // Строку красим только если на этой стороне действительно что-то изменилось:
+    // при чистой вставке слева нечему быть красным, и наоборот.
+    const hasChanges = side.parts.some((part) => part.changed);
+    cell.classList.add(`cell--${hasChanges ? side.type : 'equal'}`);
 
-        const preview = document.createElement('pre');
-        preview.className = 'preview';
-        preview.textContent = doc.preview || 'Документ не содержит текста';
-        card.append(preview);
+    const number = document.createElement('span');
+    number.className = 'cell__number';
+    number.textContent = side.number;
 
-        results.append(card);
+    const text = document.createElement('span');
+    text.className = 'cell__text';
+    side.parts.forEach((part) => {
+        if (!part.changed) {
+            text.append(document.createTextNode(part.text));
+            return;
+        }
+        const mark = document.createElement('span');
+        mark.className = column === 'old' ? 'word--removed' : 'word--added';
+        mark.textContent = part.text;
+        text.append(mark);
     });
+
+    cell.append(number, text);
+    return cell;
+}
+
+function renderDiff(data) {
+    document.getElementById('old-name').textContent = data.old.filename;
+    document.getElementById('old-stats').textContent =
+        `${formatSize(data.old.size)} · строк: ${data.old.lines} · слов: ${data.old.words}`;
+    document.getElementById('new-name').textContent = data.new.filename;
+    document.getElementById('new-stats').textContent =
+        `${formatSize(data.new.size)} · строк: ${data.new.lines} · слов: ${data.new.words}`;
+
+    document.getElementById('count-removed').textContent = data.summary.removed;
+    document.getElementById('count-added').textContent = data.summary.added;
+    document.getElementById('count-changed').textContent = data.summary.changed;
+    document.getElementById('count-unchanged').textContent = data.summary.unchanged;
+
+    diffBody.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    data.rows.forEach((row) => {
+        fragment.append(buildCell(row.old, 'old'), buildCell(row.new, 'new'));
+    });
+    diffBody.append(fragment);
+
     results.hidden = false;
 }
 
@@ -102,22 +135,31 @@ form.addEventListener('submit', async (event) => {
     hideError();
     results.hidden = true;
     submit.disabled = true;
-    submit.textContent = 'Загрузка…';
+    submit.textContent = 'Сравниваю…';
 
+    const started = performance.now();
     try {
-        const response = await fetch('/api/upload', {
+        log('шаг 1: отправляю файлы на', API_URL);
+        const response = await fetch(API_URL, {
             method: 'POST',
             body: new FormData(form),
         });
+        log('шаг 2: ответ', response.status, response.statusText,
+            `за ${(performance.now() - started).toFixed(0)} мс`);
+
         const data = await response.json();
         if (!response.ok) {
-            throw new Error(data.detail || 'Не удалось загрузить документы');
+            throw new Error(data.detail || 'Не удалось сравнить документы');
         }
-        renderResults(data.documents);
+
+        log('шаг 3: получено строк diff:', data.rows.length, 'сводка:', data.summary);
+        renderDiff(data);
+        log('шаг 4: результат отрисован');
     } catch (err) {
+        console.error(`[compare-docs v${APP_VERSION}] ошибка:`, err);
         showError(err.message);
     } finally {
-        submit.textContent = 'Загрузить';
+        submit.textContent = 'Сравнить';
         refreshSubmit();
     }
 });

@@ -4,40 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Сравнение документов</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=__V__">
 </head>
 <body>
 <header class="header">
-    <h1>Загрузка документов</h1>
-    <p class="subtitle">Выберите два файла в формате .docx</p>
+    <h1>Сравнение документов</h1>
+    <p class="subtitle">Загрузите старую и новую версии в формате .docx</p>
 </header>
 
 <main class="container">
     <form id="upload-form">
         <div class="drops">
-            <label class="drop" data-slot="1" for="file1">
+            <label class="drop" for="file1">
                 <input type="file" id="file1" name="file1" accept=".docx" hidden>
-                <span class="drop__index">Документ 1</span>
+                <span class="drop__index">Старая версия</span>
                 <span class="drop__hint">Перетащите файл сюда или нажмите, чтобы выбрать</span>
                 <span class="drop__file"></span>
             </label>
 
-            <label class="drop" data-slot="2" for="file2">
+            <label class="drop" for="file2">
                 <input type="file" id="file2" name="file2" accept=".docx" hidden>
-                <span class="drop__index">Документ 2</span>
+                <span class="drop__index">Новая версия</span>
                 <span class="drop__hint">Перетащите файл сюда или нажмите, чтобы выбрать</span>
                 <span class="drop__file"></span>
             </label>
         </div>
 
-        <button type="submit" id="submit" class="button" disabled>Загрузить</button>
+        <button type="submit" id="submit" class="button" disabled>Сравнить</button>
     </form>
 
     <p id="error" class="error" hidden></p>
 
-    <section id="results" class="results" hidden></section>
+    <section id="results" class="results" hidden>
+        <div class="summary">
+            <span class="legend legend--removed">Удалено: <b id="count-removed">0</b></span>
+            <span class="legend legend--added">Добавлено: <b id="count-added">0</b></span>
+            <span class="legend legend--changed">Изменено строк: <b id="count-changed">0</b></span>
+            <span class="legend">Без изменений: <b id="count-unchanged">0</b></span>
+        </div>
+
+        <div class="diff">
+            <div class="diff__head diff__head--old">
+                <span id="old-name"></span>
+                <small id="old-stats"></small>
+            </div>
+            <div class="diff__head diff__head--new">
+                <span id="new-name"></span>
+                <small id="new-stats"></small>
+            </div>
+            <div class="diff__body" id="diff-body"></div>
+        </div>
+    </section>
 </main>
 
-<script src="/static/app.js"></script>
+<script src="/static/app.js?v=__V__"></script>
 </body>
 </html>

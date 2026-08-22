@@ -4,7 +4,8 @@
     {
       "name": "compare-docs",
       "runtimeExecutable": ".venv/bin/python",
-      "runtimeArgs": ["-m", "uvicorn", "main:app", "--reload", "--port", "8000"],
+      "runtimeArgs": ["-m", "uvicorn", "main:app", "--reload"],
+      "autoPort": true,
       "port": 8000
     }
   ]
