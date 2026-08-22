@@ -5,7 +5,8 @@
       "name": "compare-docs",
       "runtimeExecutable": ".venv/Scripts/python.exe",
       "runtimeArgs": ["main.py"],
-      "port": 8000
+      "port": 8000,
+      "autoPort": true
     }
   ]
 }

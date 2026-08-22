@@ -3,9 +3,13 @@ const submitBtn = document.getElementById("submit-btn");
 const resetBtn = document.getElementById("reset-btn");
 const errorBox = document.getElementById("error");
 const results = document.getElementById("results");
+const summaryStats = document.getElementById("summary-stats");
+const onlyChanges = document.getElementById("only-changes");
+const diff = document.getElementById("diff");
 const dropzones = [...document.querySelectorAll(".dropzone")];
 
-// Перетаскивание файла в зону
+// ---------- Выбор файлов ----------
+
 dropzones.forEach((zone) => {
   const input = zone.querySelector("input[type=file]");
 
@@ -54,36 +58,33 @@ function formatSize(bytes) {
   return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
 }
 
-function showError(message) {
-  errorBox.textContent = message;
-  errorBox.hidden = false;
-}
+// ---------- Отправка ----------
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   errorBox.hidden = true;
   results.hidden = true;
   submitBtn.disabled = true;
-  submitBtn.textContent = "Загрузка…";
+  submitBtn.textContent = "Сравниваем…";
 
   try {
-    const response = await fetch("/api/upload", {
+    const response = await fetch("/api/compare", {
       method: "POST",
       body: new FormData(form),
     });
     const payload = await response.json();
 
     if (!response.ok) {
-      throw new Error(payload.detail || "Не удалось загрузить документы");
+      throw new Error(payload.detail || "Не удалось сравнить документы");
     }
 
-    render("left", payload.left);
-    render("right", payload.right);
+    render(payload);
     results.hidden = false;
   } catch (err) {
-    showError(err.message);
+    errorBox.textContent = err.message;
+    errorBox.hidden = false;
   } finally {
-    submitBtn.textContent = "Загрузить";
+    submitBtn.textContent = "Сравнить";
     updateSubmitState();
   }
 });
@@ -96,56 +97,109 @@ resetBtn.addEventListener("click", () => {
   });
   errorBox.hidden = true;
   results.hidden = true;
+  onlyChanges.checked = false;
   updateSubmitState();
 });
 
-function render(slot, doc) {
-  const panel = results.querySelector(`.result[data-slot="${slot}"]`);
-  panel.replaceChildren();
+onlyChanges.addEventListener("change", applyFilter);
 
-  const title = document.createElement("h2");
-  title.textContent = doc.filename;
-  panel.append(title);
+function applyFilter() {
+  const hide = onlyChanges.checked;
+  diff.querySelectorAll(".row").forEach((row) => {
+    row.classList.toggle("hidden", hide && row.dataset.pair === "equal");
+  });
+}
 
-  const stats = document.createElement("div");
-  stats.className = "stats";
-  const items = [
-    [doc.paragraphs, "абзацев"],
-    [doc.words, "слов"],
-    [doc.chars, "символов"],
-    [doc.tables, "таблиц"],
+// ---------- Отрисовка ----------
+
+function render(data) {
+  renderSummary(data);
+  diff.replaceChildren(
+    makeHead("left", "Старая версия", data.left),
+    makeHead("right", "Новая версия", data.right)
+  );
+
+  for (const pair of data.rows) {
+    // Пара считается неизменной, только если обе стороны без правок
+    const pairKind =
+      pair.left.kind === "equal" && pair.right.kind === "equal" ? "equal" : "changed";
+    diff.append(makeRow(pair.left, pairKind), makeRow(pair.right, pairKind));
+  }
+
+  if (!data.rows.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "Оба документа не содержат текста.";
+    diff.append(empty);
+  }
+
+  applyFilter();
+}
+
+function renderSummary({ summary, left, right }) {
+  const chips = [
+    ["chip--del", summary.removed, "удалено абзацев"],
+    ["chip--ins", summary.added, "добавлено абзацев"],
+    ["", summary.changed, "изменено абзацев"],
+    ["", summary.equal, "без изменений"],
   ];
-  for (const [value, label] of items) {
-    const stat = document.createElement("div");
-    stat.className = "stat";
-    const v = document.createElement("div");
-    v.className = "stat__value";
-    v.textContent = value.toLocaleString("ru-RU");
-    const l = document.createElement("div");
-    l.className = "stat__label";
-    l.textContent = label;
-    stat.append(v, l);
-    stats.append(stat);
-  }
-  panel.append(stats);
 
-  const preview = document.createElement("div");
-  preview.className = "preview";
-  for (const text of doc.preview) {
-    const p = document.createElement("p");
-    p.textContent = text;
-    preview.append(p);
+  summaryStats.replaceChildren();
+
+  if (summary.identical) {
+    summaryStats.append(makeChip("chip--identical", null, "Документы идентичны"));
   }
-  if (doc.truncated) {
-    const more = document.createElement("p");
-    more.className = "more";
-    more.textContent = `…ещё ${doc.paragraphs - doc.preview.length} абз.`;
-    preview.append(more);
+
+  for (const [cls, value, label] of chips) {
+    summaryStats.append(makeChip(cls, value, label));
   }
-  if (!doc.preview.length) {
-    const empty = document.createElement("p");
-    empty.textContent = "Документ не содержит текста.";
-    preview.append(empty);
+
+  summaryStats.append(
+    makeChip("", null, `${left.words.toLocaleString("ru-RU")} → ${right.words.toLocaleString("ru-RU")} слов`)
+  );
+}
+
+function makeChip(cls, value, label) {
+  const chip = document.createElement("div");
+  chip.className = `chip ${cls}`.trim();
+  if (value !== null) {
+    const b = document.createElement("b");
+    b.textContent = value.toLocaleString("ru-RU");
+    chip.append(b);
   }
-  panel.append(preview);
+  chip.append(document.createTextNode(label));
+  return chip;
+}
+
+function makeHead(side, title, doc) {
+  const head = document.createElement("div");
+  head.className = `diff__head diff__head--${side}`;
+  const label = document.createElement("span");
+  label.textContent = title;
+  head.append(label, document.createTextNode(doc.filename));
+  return head;
+}
+
+function makeRow(row, pairKind) {
+  const el = document.createElement("div");
+  el.className = `row row--${row.kind}`;
+  el.dataset.pair = pairKind;
+
+  for (const span of row.spans) {
+    if (span.mark === "none") {
+      el.append(document.createTextNode(span.text));
+    } else {
+      const mark = document.createElement("mark");
+      mark.className = span.mark;
+      mark.textContent = span.text;
+      el.append(mark);
+    }
+  }
+
+  // Пустая строка всё равно должна занимать высоту в сетке
+  if (!row.spans.length) {
+    el.append(document.createTextNode(" "));
+  }
+
+  return el;
 }

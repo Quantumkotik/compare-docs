@@ -9,7 +9,7 @@
 <body>
   <header class="header">
     <h1>compare-docs</h1>
-    <p class="subtitle">Загрузите два документа .docx</p>
+    <p class="subtitle">Загрузите две версии документа .docx, чтобы увидеть различия</p>
   </header>
 
   <main class="main">
@@ -17,7 +17,7 @@
       <div class="dropzones">
         <label class="dropzone" data-slot="left">
           <input type="file" name="left" accept=".docx" hidden>
-          <span class="dropzone__badge">Документ 1</span>
+          <span class="dropzone__badge">Старая версия</span>
           <span class="dropzone__icon">＋</span>
           <span class="dropzone__label">Перетащите файл или нажмите</span>
           <span class="dropzone__file"></span>
@@ -25,7 +25,7 @@
 
         <label class="dropzone" data-slot="right">
           <input type="file" name="right" accept=".docx" hidden>
-          <span class="dropzone__badge">Документ 2</span>
+          <span class="dropzone__badge">Новая версия</span>
           <span class="dropzone__icon">＋</span>
           <span class="dropzone__label">Перетащите файл или нажмите</span>
           <span class="dropzone__file"></span>
@@ -33,7 +33,7 @@
       </div>
 
       <div class="actions">
-        <button type="submit" id="submit-btn" disabled>Загрузить</button>
+        <button type="submit" id="submit-btn" disabled>Сравнить</button>
         <button type="button" id="reset-btn" class="secondary">Сбросить</button>
       </div>
     </form>
@@ -41,8 +41,16 @@
     <p id="error" class="error" hidden></p>
 
     <section id="results" class="results" hidden>
-      <div class="result" data-slot="left"></div>
-      <div class="result" data-slot="right"></div>
+      <div class="summary">
+        <div class="summary__stats" id="summary-stats"></div>
+        <label class="toggle">
+          <input type="checkbox" id="only-changes">
+          <span>Только различия</span>
+        </label>
+      </div>
+
+      <!-- Одна grid-сетка на обе колонки: строки-пары выравниваются по высоте -->
+      <div class="diff" id="diff"></div>
     </section>
   </main>
 

@@ -1,10 +1,15 @@
 """Чтение .docx: извлечение текста абзацев и таблиц."""
 
 import io
+import logging
 from dataclasses import dataclass, field
 
 from docx import Document
 from docx.opc.exceptions import PackageNotFoundError
+
+from app.logging_setup import Step
+
+log = logging.getLogger("app.docx")
 
 
 class DocxReadError(Exception):
@@ -32,7 +37,7 @@ class DocxContent:
     def char_count(self) -> int:
         return len(self.text)
 
-    def as_dict(self, preview_paragraphs: int = 20) -> dict:
+    def as_dict(self) -> dict:
         return {
             "filename": self.filename,
             "size_bytes": self.size_bytes,
@@ -40,8 +45,6 @@ class DocxContent:
             "tables": self.tables,
             "words": self.word_count,
             "chars": self.char_count,
-            "preview": self.paragraphs[:preview_paragraphs],
-            "truncated": len(self.paragraphs) > preview_paragraphs,
         }
 
 
@@ -50,25 +53,47 @@ def read_docx(data: bytes, filename: str) -> DocxContent:
 
     Пустые абзацы отбрасываются — они не несут смысла при сравнении.
     """
-    try:
-        document = Document(io.BytesIO(data))
-    except PackageNotFoundError as exc:
-        raise DocxReadError(f"«{filename}» не является документом .docx") from exc
-    except Exception as exc:  # повреждённый архив, неожиданный XML и т.п.
-        raise DocxReadError(f"Не удалось прочитать «{filename}»: {exc}") from exc
+    log.info("Разбор документа «%s», %d байт", filename, len(data))
 
-    paragraphs = [p.text.strip() for p in document.paragraphs if p.text.strip()]
+    with Step(log, f"открытие «{filename}»"):
+        try:
+            document = Document(io.BytesIO(data))
+        except PackageNotFoundError as exc:
+            log.warning("«%s»: не распознан как zip-контейнер docx", filename)
+            raise DocxReadError(f"«{filename}» не является документом .docx") from exc
+        except Exception as exc:  # повреждённый архив, неожиданный XML и т.п.
+            log.exception("«%s»: сбой при открытии", filename)
+            raise DocxReadError(f"Не удалось прочитать «{filename}»: {exc}") from exc
 
-    for table in document.tables:
-        for row in table.rows:
-            cells = [cell.text.strip() for cell in row.cells]
-            line = " | ".join(c for c in cells if c)
-            if line:
-                paragraphs.append(line)
+    with Step(log, f"извлечение абзацев из «{filename}»") as step:
+        raw_count = len(document.paragraphs)
+        paragraphs = [p.text.strip() for p in document.paragraphs if p.text.strip()]
+        step.add(всего=raw_count, непустых=len(paragraphs))
+        log.debug("«%s»: отброшено пустых абзацев: %d", filename, raw_count - len(paragraphs))
 
-    return DocxContent(
+    with Step(log, f"извлечение таблиц из «{filename}»") as step:
+        table_lines = 0
+        for index, table in enumerate(document.tables, 1):
+            for row in table.rows:
+                cells = [cell.text.strip() for cell in row.cells]
+                line = " | ".join(c for c in cells if c)
+                if line:
+                    paragraphs.append(line)
+                    table_lines += 1
+            log.debug("«%s»: таблица %d — строк %d", filename, index, len(table.rows))
+        step.add(таблиц=len(document.tables), строк=table_lines)
+
+    content = DocxContent(
         filename=filename,
         size_bytes=len(data),
         paragraphs=paragraphs,
         tables=len(document.tables),
     )
+    log.info(
+        "Документ «%s» разобран: абзацев %d, слов %d, символов %d",
+        filename,
+        len(content.paragraphs),
+        content.word_count,
+        content.char_count,
+    )
+    return content
